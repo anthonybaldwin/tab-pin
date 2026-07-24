@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Pin",
+  "version": "1.0",
+  "description": "Pin or unpin the current tab with a keyboard shortcut.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0MU1tZAKLv78BRZiNvpA6fJeV+IazWKxbNBDiEm2joeggKMXwxLS8hk5MSgKNtB9tq3H8iOPEXvAzyjlv/GqrOaorkNxLZ+wiusulLcDzV7YRR3qPRoBzpRSE6fPCAJORCMT9+kXq06Z3LxIQTYt2mNFd3dYYkokVcvMdWLCEZLVfq4t66DTrOl+D6aApl++qKOytyZOM3K09IM/E9I11HyZqkzv5FV0+0ueK2RWFCfvFCSKmjytvZw7gubiMaEL17Hjl/mYa1uDdnE/I0DuVe8XkID9WglQqdEsLg5YMfoHiPcdvNca8On2+HQrFxMmvL27CyPk29UAfFZ0/fOLuQIDAQAB",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Pin/unpin this tab",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "toggle-pin": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X",
+        "mac": "Command+Shift+X"
+      },
+      "description": "Pin/unpin the current tab"
+    }
+  }
+}
