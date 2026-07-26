@@ -13,14 +13,30 @@ chrome.commands.onCommand.addListener((command) => {
 
 chrome.action.onClicked.addListener((tab) => togglePin(tab));
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "toggle-pin",
-    title: "Pin",
-    contexts: ["page"]
+async function updateMenuTitle() {
+  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  chrome.contextMenus.update("toggle-pin", {
+    title: tab?.pinned ? "Unpin" : "Pin"
   });
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create(
+    {
+      id: "toggle-pin",
+      title: "Pin",
+      contexts: ["page"]
+    },
+    () => updateMenuTitle()
+  );
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "toggle-pin") togglePin(tab);
+});
+
+chrome.tabs.onActivated.addListener(() => updateMenuTitle());
+chrome.windows.onFocusChanged.addListener(() => updateMenuTitle());
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.pinned !== undefined) updateMenuTitle();
 });
