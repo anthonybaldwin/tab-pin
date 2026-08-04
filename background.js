@@ -1,8 +1,8 @@
 async function togglePin(tab) {
-  if (!tab) {
+  if (!tab || tab.id === chrome.tabs.TAB_ID_NONE) {
     [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   }
-  if (!tab) return;
+  if (!tab || tab.id === chrome.tabs.TAB_ID_NONE) return;
   const key = `pos-${tab.id}`;
   if (!tab.pinned) {
     await chrome.storage.session.set({
@@ -38,12 +38,14 @@ async function updateMenuTitle() {
   });
 }
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
+  await chrome.contextMenus.removeAll();
   chrome.contextMenus.create(
     {
       id: "toggle-pin",
       title: "Pin",
-      contexts: ["page"]
+      contexts: ["page"],
+      documentUrlPatterns: ["http://*/*", "https://*/*", "file:///*"]
     },
     () => updateMenuTitle()
   );
