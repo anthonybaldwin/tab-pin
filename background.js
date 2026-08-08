@@ -56,31 +56,43 @@ async function refreshPinnedActions() {
   tabs.forEach(updateAction);
 }
 
+const MENU_ID = "toggle-pin";
+const MENU_PROPS = {
+  contexts: ["page"],
+  documentUrlPatterns: ["http://*/*", "https://*/*", "file:///*"]
+};
+
 async function updateMenuTitle() {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-  chrome.contextMenus.update("toggle-pin", {
-    title: tab?.pinned ? "Unpin" : "Pin"
+  const title = tab?.pinned ? "Unpin" : "Pin";
+  chrome.contextMenus.update(MENU_ID, { title }, () => {
+    if (!chrome.runtime.lastError) return;
+    // The menu can be gone when an event wakes the worker before onInstalled
+    // recreates it (or the browser didn't restore it) — recreate instead.
+    chrome.contextMenus.create(
+      { id: MENU_ID, title, ...MENU_PROPS },
+      // A concurrent create may have won the race; duplicate-id is fine.
+      () => void chrome.runtime.lastError
+    );
   });
 }
 
-chrome.runtime.onStartup.addListener(() => refreshPinnedActions());
+chrome.runtime.onStartup.addListener(() => {
+  refreshPinnedActions();
+  updateMenuTitle();
+});
 
 chrome.runtime.onInstalled.addListener(async () => {
   refreshPinnedActions();
   await chrome.contextMenus.removeAll();
   chrome.contextMenus.create(
-    {
-      id: "toggle-pin",
-      title: "Pin",
-      contexts: ["page"],
-      documentUrlPatterns: ["http://*/*", "https://*/*", "file:///*"]
-    },
+    { id: MENU_ID, title: "Pin", ...MENU_PROPS },
     () => updateMenuTitle()
   );
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "toggle-pin") togglePin(tab);
+  if (info.menuItemId === MENU_ID) togglePin(tab);
 });
 
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
