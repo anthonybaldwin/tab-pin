@@ -11,7 +11,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Pin/unpin this tab",
+    "default_title": "Pin tab",
     "default_icon": {
       "16": "icons/icon16-gray.png",
       "32": "icons/icon32-gray.png"

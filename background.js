@@ -31,7 +31,7 @@ chrome.commands.onCommand.addListener((command) => {
 
 chrome.action.onClicked.addListener((tab) => togglePin(tab));
 
-function updateIcon(tab) {
+function updateAction(tab) {
   if (!tab || tab.id === chrome.tabs.TAB_ID_NONE) return;
   const suffix = tab.pinned ? "" : "-gray";
   chrome.action.setIcon({
@@ -41,11 +41,15 @@ function updateIcon(tab) {
       32: `icons/icon32${suffix}.png`
     }
   });
+  chrome.action.setTitle({
+    tabId: tab.id,
+    title: tab.pinned ? "Unpin tab" : "Pin tab"
+  });
 }
 
-async function refreshPinnedIcons() {
+async function refreshPinnedActions() {
   const tabs = await chrome.tabs.query({ pinned: true });
-  tabs.forEach(updateIcon);
+  tabs.forEach(updateAction);
 }
 
 async function updateMenuTitle() {
@@ -55,10 +59,10 @@ async function updateMenuTitle() {
   });
 }
 
-chrome.runtime.onStartup.addListener(() => refreshPinnedIcons());
+chrome.runtime.onStartup.addListener(() => refreshPinnedActions());
 
 chrome.runtime.onInstalled.addListener(async () => {
-  refreshPinnedIcons();
+  refreshPinnedActions();
   await chrome.contextMenus.removeAll();
   chrome.contextMenus.create(
     {
@@ -79,8 +83,8 @@ chrome.tabs.onActivated.addListener(() => updateMenuTitle());
 chrome.windows.onFocusChanged.addListener(() => updateMenuTitle());
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.pinned !== undefined) updateMenuTitle();
-  // Per-tab icons reset on navigation, so re-apply on load as well.
+  // Per-tab icon and title reset on navigation, so re-apply on load as well.
   if (changeInfo.pinned !== undefined || changeInfo.status === "loading") {
-    updateIcon(tab);
+    updateAction(tab);
   }
 });
