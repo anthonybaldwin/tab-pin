@@ -34,17 +34,19 @@ chrome.action.onClicked.addListener((tab) => togglePin(tab));
 function updateAction(tab) {
   if (!tab || tab.id === chrome.tabs.TAB_ID_NONE) return;
   const suffix = tab.pinned ? "" : "-gray";
+  // The tab can close before these calls resolve ("No tab with id" errors).
+  const ignoreClosedTab = () => {};
   chrome.action.setIcon({
     tabId: tab.id,
     path: {
       16: `icons/icon16${suffix}.png`,
       32: `icons/icon32${suffix}.png`
     }
-  });
+  }).catch(ignoreClosedTab);
   chrome.action.setTitle({
     tabId: tab.id,
     title: tab.pinned ? "Unpin tab" : "Pin tab"
-  });
+  }).catch(ignoreClosedTab);
 }
 
 async function refreshPinnedActions() {
