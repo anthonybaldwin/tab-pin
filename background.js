@@ -34,19 +34,21 @@ chrome.action.onClicked.addListener((tab) => togglePin(tab));
 function updateAction(tab) {
   if (!tab || tab.id === chrome.tabs.TAB_ID_NONE) return;
   const suffix = tab.pinned ? "" : "-gray";
-  // The tab can close before these calls resolve ("No tab with id" errors).
-  const ignoreClosedTab = () => {};
+  // Tab-close can fire updates for the dying tab, and setIcon's "No tab
+  // with id" error escapes promise .catch — only reading lastError in a
+  // callback marks it checked.
+  const ignoreClosedTab = () => void chrome.runtime.lastError;
   chrome.action.setIcon({
     tabId: tab.id,
     path: {
       16: `icons/icon16${suffix}.png`,
       32: `icons/icon32${suffix}.png`
     }
-  }).catch(ignoreClosedTab);
+  }, ignoreClosedTab);
   chrome.action.setTitle({
     tabId: tab.id,
     title: tab.pinned ? "Unpin tab" : "Pin tab"
-  }).catch(ignoreClosedTab);
+  }, ignoreClosedTab);
 }
 
 async function refreshPinnedActions() {
@@ -81,7 +83,15 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "toggle-pin") togglePin(tab);
 });
 
-chrome.tabs.onActivated.addListener(() => updateMenuTitle());
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  updateMenuTitle();
+  // Refresh from the tab we land on (e.g. after closing another tab).
+  try {
+    updateAction(await chrome.tabs.get(activeInfo.tabId));
+  } catch {
+    // That tab is already gone too; nothing to update.
+  }
+});
 chrome.windows.onFocusChanged.addListener(() => updateMenuTitle());
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.pinned !== undefined) updateMenuTitle();
