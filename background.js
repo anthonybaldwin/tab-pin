@@ -33,7 +33,7 @@ chrome.action.onClicked.addListener((tab) => togglePin(tab));
 
 function updateAction(tab) {
   if (!tab || tab.id === chrome.tabs.TAB_ID_NONE) return;
-  const suffix = tab.pinned ? "" : "-gray";
+  const suffix = tab.pinned ? "" : "-dim";
   // Tab-close can fire updates for the dying tab, and setIcon's "No tab
   // with id" error escapes promise .catch — only reading lastError in a
   // callback marks it checked.
