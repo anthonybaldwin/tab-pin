@@ -13,8 +13,8 @@
   "action": {
     "default_title": "Pin tab",
     "default_icon": {
-      "16": "icons/icon16-gray.png",
-      "32": "icons/icon32-gray.png"
+      "16": "icons/icon16-dim.png",
+      "32": "icons/icon32-dim.png"
     }
   },
   "permissions": ["contextMenus", "storage"],
