@@ -87,7 +87,12 @@ chrome.runtime.onInstalled.addListener(async () => {
   await chrome.contextMenus.removeAll();
   chrome.contextMenus.create(
     { id: MENU_ID, title: "Pin", ...MENU_PROPS },
-    () => updateMenuTitle()
+    () => {
+      // An event can wake the worker during removeAll and recreate the item
+      // first; a duplicate-id failure just means it's already there.
+      void chrome.runtime.lastError;
+      updateMenuTitle();
+    }
   );
 });
 
